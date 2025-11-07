@@ -14,13 +14,13 @@ class StatsOverview extends StatsOverviewWidget
 
     protected function getStats(): array
     {   
-        $startDate = ! is_null($this->pageFilters['startDate'] ?? null)
-            ? Carbon::parse($this->pageFilters['startDate'])
-            : now()->startOfMonth();
+        $startDate = !empty($this->pageFilters['startDate'])
+            ? Carbon::parse($this->pageFilters['startDate'])->startOfDay()
+            : Carbon::now()->startOfMonth();
 
-        $endDate = ! is_null($this->pageFilters['endDate'] ?? null)
-            ? Carbon::parse($this->pageFilters['endDate'])
-            : now()->endOfMonth();
+        $endDate = !empty($this->pageFilters['endDate'])
+            ? Carbon::parse($this->pageFilters['endDate'])->endOfDay()
+            : Carbon::now();
 
         $pemasukan = Transaction::incomes()
             ->whereBetween('date_transaction', [$startDate, $endDate])

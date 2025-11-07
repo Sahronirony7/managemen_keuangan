@@ -17,13 +17,13 @@ class WidgetExpenseChart extends ChartWidget
 
     protected function getData(): array
     {
-         $startDate = ! is_null($this->pageFilters['startDate'] ?? null) ?
-            Carbon::parse($this->pageFilters['startDate']) :
-            null;
+         $startDate = !empty($this->pageFilters['startDate'])
+            ? Carbon::parse($this->pageFilters['startDate'])->startOfDay()
+            : Carbon::now()->startOfMonth();
 
-        $endDate = ! is_null($this->pageFilters['endDate'] ?? null) ?
-            Carbon::parse($this->pageFilters['endDate']) :
-            now();
+        $endDate = !empty($this->pageFilters['endDate'])
+            ? Carbon::parse($this->pageFilters['endDate'])->endOfDay()
+            : Carbon::now();
         $data = Trend::query(Transaction::expenses())
         ->dateColumn('date_transaction')
         ->between(

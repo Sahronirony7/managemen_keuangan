@@ -1,23 +1,23 @@
 <table>
     <thead>
         <tr>
-            <th>Tanggal</th>
-            <th>Nama Transaksi</th>
+            <th>ID</th>
+            <th>Tanggal Transaksi</th>
             <th>Kategori</th>
-            <th>Jenis</th>
-            <th>Jumlah</th>
-            <th>Catatan</th>
+            <th>Deskripsi</th>
+            <th>Nominal</th>
+            <th>Tipe</th>
         </tr>
     </thead>
     <tbody>
-        @foreach ($transactions as $t)
+        @foreach ($transactions as $trx)
             <tr>
-                <td>{{ \Carbon\Carbon::parse($t->date_transaction)->format('d/m/Y') }}</td>
-                <td>{{ $t->name }}</td>
-                <td>{{ $t->category->name ?? '-' }}</td>
-                <td>{{ $t->category->is_expense ? 'Pengeluaran' : 'Pemasukan' }}</td>
-                <td>{{ number_format($t->amount, 0, ',', '.') }}</td>
-                <td>{{ $t->note }}</td>
+                <td>{{ $trx->id }}</td>
+                <td>{{ $trx->date_transaction }}</td>
+                <td>{{ $trx->category->name ?? '-' }}</td>
+                <td>{{ $trx->description ?? '-' }}</td>
+                <td>{{ number_format($trx->amount, 0, ',', '.') }}</td>
+                <td>{{ $trx->category->is_expense ? 'Pengeluaran' : 'Pemasukan' }}</td>
             </tr>
         @endforeach
     </tbody>

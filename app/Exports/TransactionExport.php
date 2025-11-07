@@ -3,60 +3,51 @@
 namespace App\Filament\Exports;
 
 use App\Models\Transaction;
-use Illuminate\Contracts\View\View;
-use Maatwebsite\Excel\Concerns\FromView;
-use Maatwebsite\Excel\Concerns\ShouldAutoSize;
-use Maatwebsite\Excel\Concerns\WithTitle;
-use Maatwebsite\Excel\Concerns\WithStyles;
-use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
+use Filament\Actions\Exports\ExportColumn;
+use Filament\Actions\Exports\Exporter;
+use Filament\Actions\Exports\Models\Export;
 
-class TransactionExport implements FromView, ShouldAutoSize, WithTitle, WithStyles
+class TransactionExport extends Exporter
 {
-    protected array $filters;
+    protected static ?string $model = Transaction::class;
 
-    public function __construct(array $filters = [])
-    {
-        $this->filters = $filters;
-    }
-
-    public function view(): View
-    {
-        $query = Transaction::query()->with('category');
-
-        // ✅ Filter rentang tanggal
-        if (!empty($this->filters['from']) && !empty($this->filters['until'])) {
-            $query->whereBetween('date_transaction', [
-                $this->filters['from'],
-                $this->filters['until'],
-            ]);
-        }
-
-        // ✅ Filter kategori
-        if (!empty($this->filters['category_id'])) {
-            $query->where('category_id', $this->filters['category_id']);
-        }
-
-        // ✅ Filter tipe (is_expense)
-        if (isset($this->filters['is_expense'])) {
-            $query->whereHas('category', fn($c) => 
-                $c->where('is_expense', $this->filters['is_expense'])
-            );
-        }
-
-        return view('exports.transactions', [
-            'transactions' => $query->orderBy('date_transaction', 'desc')->get(),
-        ]);
-    }
-
-    public function title(): string
-    {
-        return 'Data Transaksi';
-    }
-
-    public function styles(Worksheet $sheet)
+    public static function getColumns(): array
     {
         return [
-            1 => ['font' => ['bold' => true]], // Membuat header tebal
+            ExportColumn::make('id')
+                ->label('ID'),
+
+            ExportColumn::make('date_transaction')
+                ->label('Tanggal Transaksi')
+                ->formatStateUsing(fn ($state) => \Carbon\Carbon::parse($state)->format('d M Y')),
+
+            ExportColumn::make('category.name')
+                ->label('Kategori'),
+
+            ExportColumn::make('category.is_expense')
+                ->label('Tipe')
+                ->formatStateUsing(fn ($state) => $state ? 'Pengeluaran' : 'Pemasukan'),
+
+            ExportColumn::make('amount')
+                ->label('Jumlah (Rp)')
+                ->formatStateUsing(fn ($state) => number_format($state, 0, ',', '.')),
+
+            ExportColumn::make('note')
+                ->label('Catatan'),
+
+            ExportColumn::make('created_at')
+                ->label('Dibuat')
+                ->formatStateUsing(fn ($state) => \Carbon\Carbon::parse($state)->format('d M Y H:i')),
+
+            ExportColumn::make('updated_at')
+                ->label('Diperbarui')
+                ->formatStateUsing(fn ($state) => \Carbon\Carbon::parse($state)->format('d M Y H:i')),
         ];
+    }
+
+    public static function getCompletedNotificationBody(Export $export): string
+    {
+        $count = number_format($export->successful_rows);
+        return "Export transaksi selesai. {$count} data berhasil diexport.";
     }
 }

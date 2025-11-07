@@ -29,22 +29,28 @@ class AdminPanelProvider extends PanelProvider
             ->path('admin')
             //->BrandLogo(asset('images/logo.png'))
             ->login()
-            ->brandName('Yayasan AQH Finance') // 🟡 Nama brand muncul di sidebar & header
-            //->brandLogo(asset('images/logo.png')) // 🟢 Logo utama (SVG atau PNG)
-            ->favicon(asset('images/favicon.ico')) // 🔵 Icon (favicon)
+            ->brandLogo(asset('images/logo.png')) // Logo atas (sidebar dan login)
+            ->brandLogoHeight('4rem') // Ukuran logo
+            ->brandName('AQu Humanity Finance') // Nama brand
+            ->favicon(asset('images/favicon.ico')) // Favicon browser
+
+            /**
+             * 🎨 Warna Tema
+             */
             ->colors([
-                'primary' => Color::Amber,
+                'primary' => Color::Sky, // Bisa diganti ke Color::Sky, Color::Emerald, dll
+            ])
+             ->discoverWidgets(in: app_path('Filament/Widgets'), for: 'App\Filament\Widgets')
+            ->widgets([
+                AccountWidget::class,
+                //FilamentInfoWidget::class,
             ])
             ->discoverResources(in: app_path('Filament/Resources'), for: 'App\Filament\Resources')
             ->discoverPages(in: app_path('Filament/Pages'), for: 'App\Filament\Pages')
             ->pages([
                 //Dashboard::class,//pemanggil pages dashboard
             ])
-            ->discoverWidgets(in: app_path('Filament/Widgets'), for: 'App\Filament\Widgets')
-            ->widgets([
-                AccountWidget::class,
-                FilamentInfoWidget::class,
-            ])
+           
             ->middleware([
                 EncryptCookies::class,
                 AddQueuedCookiesToResponse::class,
