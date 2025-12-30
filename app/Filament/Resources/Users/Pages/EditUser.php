@@ -10,10 +10,8 @@ class EditUser extends EditRecord
 {
     protected static string $resource = UserResource::class;
 
-    protected function getHeaderActions(): array
+     protected function afterSave(): void
     {
-        return [
-            DeleteAction::make(),
-        ];
+        $this->record->syncRoles($this->data['roles']);
     }
 }

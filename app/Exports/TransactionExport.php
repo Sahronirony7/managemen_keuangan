@@ -5,7 +5,7 @@ namespace App\Filament\Exports;
 use App\Models\Transaction;
 use Filament\Actions\Exports\ExportColumn;
 use Filament\Actions\Exports\Exporter;
-use Filament\Actions\Exports\Models\Export;
+use Illuminate\Support\Facades\Storage;
 
 class TransactionExport extends Exporter
 {
@@ -45,9 +45,20 @@ class TransactionExport extends Exporter
         ];
     }
 
-    public static function getCompletedNotificationBody(Export $export): string
+    
+
+    public static function getFileDirectory(): ?string
+    {
+        return 'exports'; // Folder: storage/app/public/exports
+    }
+
+    // ✅ Notifikasi selesai export
+    public static function getCompletedNotificationBody($export): string
     {
         $count = number_format($export->successful_rows);
-        return "Export transaksi selesai. {$count} data berhasil diexport.";
+        $filePath = $export->file_path ? Storage::url($export->file_path) : '#';
+
+        return "Export transaksi selesai. {$count} data berhasil diexport. 
+Klik link berikut untuk mengunduh: {$filePath}";
     }
 }

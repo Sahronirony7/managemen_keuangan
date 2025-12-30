@@ -11,16 +11,33 @@ class User extends Authenticatable
 {
     use HasFactory, Notifiable, HasRoles;
 
-    protected $table = 'user';
+    
 
     protected $fillable = [
-        'name','email','image','password','role_id','is_active','date_created'
+        'name',
+        'email',
+        'image',
+        'password',
+        'is_active',
     ];
 
-    protected $hidden = ['password'];
+    protected $hidden = [
+        'password',
+        'remember_token',
+    ];
 
-    public function role()
+    protected $guard_name = 'web';
+
+    /**
+     * ✅ Super Admin bypass semua permission
+     * Laravel 12 + Filament v4 compatible
+     */
+    public function can($ability, $arguments = []): bool
     {
-        return $this->belongsTo(UserRole::class,'role_id');
+        if ($this->hasRole('Super Admin')) {
+            return true;
+        }
+
+        return parent::can($ability, $arguments);
     }
 }

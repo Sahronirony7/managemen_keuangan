@@ -9,18 +9,22 @@ use App\Filament\Resources\Users\Schemas\UserForm;
 use App\Filament\Resources\Users\Tables\UsersTable;
 use App\Models\User;
 use BackedEnum;
+use Filament\Facades\Filament;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Model;
 
 class UserResource extends Resource
 {
     protected static ?string $model = User::class;
 
-    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
+    protected static string|BackedEnum|null $navigationIcon =
+        Heroicon::OutlinedRectangleStack;
 
-    protected static ?string $recordTitleAttribute = 'nama_user';
+    protected static ?string $recordTitleAttribute = 'name';
+
     public static function getNavigationGroup(): ?string
     {
         return 'Manajemen User';
@@ -36,19 +40,62 @@ class UserResource extends Resource
         return UsersTable::configure($table);
     }
 
-    public static function getRelations(): array
+    /* =====================================================
+     | 🔐 AUTHORIZATION — SUPER ADMIN FULL ACCESS
+     |=====================================================*/
+
+    protected static function authUser(): ?User
     {
-        return [
-            //
-        ];
+        return Filament::auth()->user();
+    }
+
+    protected static function isSuperAdmin(): bool
+    {
+        return self::authUser()?->hasRole('Super Admin') ?? false;
+    }
+
+    public static function canViewAny(): bool
+    {
+        if (self::isSuperAdmin()) {
+            return true;
+        }
+
+        return self::authUser()?->can('manage users') ?? false;
+    }
+
+    public static function canCreate(): bool
+    {
+        if (self::isSuperAdmin()) {
+            return true;
+        }
+
+        return self::authUser()?->can('manage users') ?? false;
+    }
+
+    public static function canEdit(Model $record): bool
+    {
+        if (self::isSuperAdmin()) {
+            return true;
+        }
+
+        return self::authUser()?->can('manage users') ?? false;
+    }
+
+    public static function canDelete(Model $record): bool
+    {
+        if (self::isSuperAdmin()) {
+            return true;
+        }
+
+        return self::authUser()?->can('manage users') ?? false;
     }
 
     public static function getPages(): array
     {
         return [
-            'index' => ListUsers::route('/'),
+            'index'  => ListUsers::route('/'),
             'create' => CreateUser::route('/create'),
-            'edit' => EditUser::route('/{record}/edit'),
+            'edit'   => EditUser::route('/{record}/edit'),
         ];
     }
 }
